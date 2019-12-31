@@ -38,7 +38,7 @@ if [ $? -eq 0 ]; then
         else
             echo [`date +'%Y%m%dT%H%M%S'`] Shared extraction failed. Started: $STARTTIME
         fi
-        
+
     else
         echo [`date +'%Y%m%dT%H%M%S'`] Build failed. Started: $STARTTIME
     fi

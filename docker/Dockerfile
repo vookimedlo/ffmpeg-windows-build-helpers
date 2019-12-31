@@ -1,4 +1,8 @@
-FROM ubuntu:19.04
+FROM ubuntu:19.10
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update && \
     apt-get install -y \
@@ -32,7 +36,8 @@ RUN apt-get update && \
     autoconf-archive \
     p7zip-full \
     ragel \
-    python3-distutils
+    python3-distutils \
+&& rm -rf /var/lib/apt/lists/*
 
 # copy the entire git dir into the new docker container
 COPY . ./ffmpeg-windows-build-helpers
