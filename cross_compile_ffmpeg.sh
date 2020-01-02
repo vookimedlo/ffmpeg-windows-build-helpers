@@ -1767,7 +1767,7 @@ build_libx264() {
       # I wasn't able to figure out how/if this gave any speedup...
       # TODO more march=native here?
       # TODO profile guided here option, with wine?
-      do_configure "-march=skylake -mtune=skylake $configure_flags"
+      do_configure "-march=ivybridge -mtune=ivybridge $configure_flags"
       curl -4 http://samples.mplayerhq.hu/yuv4mpeg2/example.y4m.bz2 -O --fail || exit 1
       rm -f example.y4m # in case it exists already...
       bunzip2 example.y4m.bz2 || exit 1
@@ -2462,7 +2462,7 @@ git_get_latest=y
 prefer_stable=y # Only for x264 and x265.
 build_intel_qsv=y # note: not windows xp friendly!
 #disable_nonfree=n # have no value by default to force user selection
-original_cflags='-march=skylake -mtune=skylake -O3' # high compatible by default, see #219, some other good options are listed below, or you could use -march=native to target your local box:
+original_cflags='-march=ivybridge -mtune=ivybridge -O3' # high compatible by default, see #219, some other good options are listed below, or you could use -march=native to target your local box:
 # if you specify a march it needs to first so x264's configure will use it :| [ is that still the case ?]
 
 #flags=$(cat /proc/cpuinfo | grep flags)
