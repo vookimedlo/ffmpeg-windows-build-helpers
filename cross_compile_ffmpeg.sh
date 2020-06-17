@@ -244,6 +244,7 @@ unset UNAME
 
 
 intro() {
+  echo `date`
   cat <<EOL
      ##################### Welcome ######################
   Welcome to the ffmpeg cross-compile builder-helper script.
@@ -1945,7 +1946,7 @@ build_libx264() {
       # I wasn't able to figure out how/if this gave any speedup...
       # TODO more march=native here?
       # TODO profile guided here option, with wine?
-      do_configure "$configure_flags"
+      do_configure "-march=znver2 -mtune=znver2 $configure_flags"
       curl -4 http://samples.mplayerhq.hu/yuv4mpeg2/example.y4m.bz2 -O --fail || exit 1
       rm -f example.y4m # in case it exists already...
       bunzip2 example.y4m.bz2 || exit 1
@@ -2645,7 +2646,7 @@ build_ffmpeg_dependencies() {
   build_libsrt # requires gnutls, mingw-std-threads
   build_libaribb24
   build_libtesseract
-  build_lensfun  # requires png, zlib, iconv
+  #build_lensfun  # requires png, zlib, iconv
   # build_libtensorflow # broken
   build_libvpx
   build_libx265
@@ -2725,8 +2726,8 @@ git_get_latest=y
 prefer_stable=y # Only for x264 and x265.
 build_intel_qsv=y # note: not windows xp friendly!
 build_amd_amf=y
-disable_nonfree=y # comment out to force user y/n selection
-original_cflags='-mtune=generic -O3' # high compatible by default, see #219, some other good options are listed below, or you could use -march=native to target your local box:
+#disable_nonfree=y # comment out to force user y/n selection
+original_cflags='-march=znver2 -mtune=znver2 -O3' # high compatible by default, see #219, some other good options are listed below, or you could use -march=native to target your local box:
 original_cppflags='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0' # Needed for mingw-w64 7 as FORTIFY_SOURCE is now partially implemented, but not actually working
 # if you specify a march it needs to first so x264's configure will use it :| [ is that still the case ?]
 
@@ -2928,3 +2929,4 @@ echo "searching for all local exe's (some may not have been built this round, NB
 for file in $(find_all_build_exes); do
   echo "built $file"
 done
+echo "---- DONE ----"
