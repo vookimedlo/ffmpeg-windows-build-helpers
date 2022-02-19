@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+!/usr/bin/env bash
 # ffmpeg windows cross compile helper/download script, see github repo README
 # Copyright (C) 2012 Roger Pack, the script is under the GPLv3, but output FFmpeg's executables aren't
 # set -x
@@ -1803,8 +1803,8 @@ build_avisynth() {
   do_git_checkout https://github.com/AviSynth/AviSynthPlus.git avisynth_git
   mkdir -p avisynth_git/avisynth-build
   cd avisynth_git/avisynth-build
-    do_cmake_from_build_dir .. -DHEADERS_ONLY:bool=on
-    do_make_install
+    do_cmake_from_build_dir .. -DHEADERS_ONLY:bool=on=
+    do_make_install install VersionGen
   cd ../..
 }
 
