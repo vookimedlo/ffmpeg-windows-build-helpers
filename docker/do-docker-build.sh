@@ -1,6 +1,6 @@
 #!/bin/bash
 STARTTIME=`date +'%Y%m%dT%H%M%S'`
-OUTPUTDIR=./output_$STARTTIME
+OUTPUTDIR=/srv/artifacts/ffmpeg/output_$STARTTIME
 
 if [ -d "../git" ]; then
   echo [`date +'%Y%m%dT%H%M%S'`] Updating local git repository.
@@ -14,15 +14,25 @@ if [ $? -eq 0 ]; then
     ## TODO make better so it doe snot clone everytime, but also no nested repositories. .dockerignore and self copy should also work.
     #rm -rf ./ffmpeg-windows-build-helpers
 
-    mkdir -p $OUTPUTDIR
     echo [`date +'%Y%m%dT%H%M%S'`] Creating and starting container...
     # When rerunning use $ docker start ffmpegbuilder -i, then in other terminal $ docker exec -it ffmpegbuilder touch /tmp/loop; docker exec -it ffmpegbuilder /bin/bash
     # while the first is still running...
-    docker run --name ffmpegbuilder -it ffmpeg-windows-build-helpers-image || docker start ffmpegbuilder -i
+
+
+    DOCKER_RUN_OPTIONS=""
+
+    # Only allocate tty if we detect one
+    if [ -t 0 ] && [ -t 1 ]; then
+        DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS -it"
+        DOCKER_RUN_OPTIONS_INTERACTIVE="$DOCKER_RUN_OPTIONS -i"
+    fi
+
+    docker run --name ffmpegbuilder $DOCKER_RUN_OPTIONS ffmpeg-windows-build-helpers-image || docker start ffmpegbuilder $DOCKER_RUN_OPTIONS_INTERACTIVE
 
     if [ $? -eq 0 ]; then
         echo [`date +'%Y%m%dT%H%M%S'`] Build successful
         echo [`date +'%Y%m%dT%H%M%S'`] Extracting build artefacts...
+        mkdir -p $OUTPUTDIR
         docker cp ffmpegbuilder:/output/static/ $OUTPUTDIR
 
         if [ $? -eq 0 ]; then
@@ -30,15 +40,6 @@ if [ $? -eq 0 ]; then
         else
             echo [`date +'%Y%m%dT%H%M%S'`] Static extraction failed. Started: $STARTTIME
         fi
-
-        docker cp ffmpegbuilder:/output/shared/ $OUTPUTDIR
-
-        if [ $? -eq 0 ]; then
-            echo [`date +'%Y%m%dT%H%M%S'`] Shared extraction successful. Started: $STARTTIME
-        else
-            echo [`date +'%Y%m%dT%H%M%S'`] Shared extraction failed. Started: $STARTTIME
-        fi
-        
     else
         echo [`date +'%Y%m%dT%H%M%S'`] Build failed. Started: $STARTTIME
     fi
@@ -52,3 +53,6 @@ else
     echo [`date +'%Y%m%dT%H%M%S'`] Docker build failed. Started: $STARTTIME
     exit 1
 fi
+
+docker container rm ffmpegbuilder
+docker image rm ffmpeg-windows-build-helpers-image:latest
