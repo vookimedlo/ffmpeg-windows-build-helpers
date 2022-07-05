@@ -2409,7 +2409,7 @@ build_ffmpeg() {
       config_options+=" --disable-libmfx"
     fi
     if [[ $enable_gpl == 'y' ]]; then
-      config_options+=" --enable-gpl --enable-frei0r ---enable-libvidstab --enable-libx264 --enable-libx265 --enable-avisynth --enable-libaribb24"
+      config_options+=" --enable-gpl --enable-frei0r --enable-libvidstab --enable-libx264 --enable-libx265 --enable-avisynth --enable-libaribb24"
       config_options+=" --enable-libxvid --enable-libdavs2"
       if [[ $host_target != 'i686-w64-mingw32' ]]; then
         config_options+=" --enable-libxavs2"
