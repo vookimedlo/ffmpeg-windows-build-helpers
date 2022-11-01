@@ -4,7 +4,7 @@
 
 set -e
 
-readonly ffmpeg_version=n5.0
+readonly ffmpeg_version=n5.1.2
 
 OUTPUTDIR=/output
 
