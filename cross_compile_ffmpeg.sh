@@ -344,7 +344,7 @@ install_cross_compiler() {
 
     # --disable-shared allows c++ to be distributed at all...which seemed necessary for some random dependency which happens to use/require c++...
     local zeranoe_script_name=mingw-w64-build-r22.local
-    local zeranoe_script_options="--gcc-ver=10.2.0 --mingw-w64-ver=9.0.0 --default-configure --cpu-count=$gcc_cpu_count --disable-shared --clean-build --verbose --allow-overwrite --threads=winpthreads" # allow-overwrite to avoid some crufty prompts if I do rebuilds [or maybe should just nuke everything...]
+    local zeranoe_script_options="--gcc-ver=13.3.0 --mingw-w64-ver=12.0.0 --default-configure --cpu-count=$gcc_cpu_count --disable-shared --clean-build --verbose --allow-overwrite --threads=winpthreads" # allow-overwrite to avoid some crufty prompts if I do rebuilds [or maybe should just nuke everything...]
     if [[ ($compiler_flavors == "win32" || $compiler_flavors == "multi") && ! -f ../$win32_gcc ]]; then
       echo "Building win32 cross compiler..."
       download_gcc_build_script $zeranoe_script_name
@@ -967,11 +967,11 @@ build_lensfun() {
 build_libtesseract() {
   build_libtiff # no disable configure option for this in tesseract? odd...
   build_libleptonica
-  do_git_checkout https://github.com/tesseract-ocr/tesseract.git tesseract_git 4.1.1
+  do_git_checkout https://github.com/tesseract-ocr/tesseract.git tesseract_git 5.5.0
   cd tesseract_git
     sed -i.bak 's/libcurl/libbcurl_disabled/g' configure.ac # --disable-curl hard disable, sometimes it's here but they link it wrong so punt...
     if [[ $compiler_flavors != "native"  ]]; then
-      apply_patch file://$patch_dir/tesseract-4.1.1_mingw-std-threads.patch
+      #apply_patch file://$patch_dir/tesseract-4.1.1_mingw-std-threads.patch
       generic_configure "--disable-openmp"
       do_make_and_make_install
       sed -i.bak 's/-ltesseract.*$/-ltesseract -lstdc++ -lws2_32 -llept -ltiff -llzma -ljpeg -lz/' $PKG_CONFIG_PATH/tesseract.pc # why does it needs winsock? LOL plus all of libtiff's <sigh>
@@ -1739,11 +1739,11 @@ build_fribidi() {
 
 build_libsrt() {
   # do_git_checkout https://github.com/Haivision/srt.git # might be able to use these days...?
-  download_and_unpack_file https://github.com/Haivision/srt/archive/v1.4.1.tar.gz srt-1.4.1
-  cd srt-1.4.1
-    if [[ $compiler_flavors != "native" ]]; then
-      apply_patch file://$patch_dir/srt.app.patch -p1
-    fi
+  download_and_unpack_file https://github.com/Haivision/srt/archive/v1.5.4.tar.gz srt-1.5.4
+  cd srt-1.5.4
+    #if [[ $compiler_flavors != "native" ]]; then
+    #  apply_patch file://$patch_dir/srt.app.patch -p1
+    #fi
     # CMake Warning at CMakeLists.txt:893 (message):
     #   On MinGW, some C++11 apps are blocked due to lacking proper C++11 headers
     #   for <thread>.  FIX IF POSSIBLE.
@@ -2014,7 +2014,7 @@ build_libx264() {
       # I wasn't able to figure out how/if this gave any speedup...
       # TODO more march=native here?
       # TODO profile guided here option, with wine?
-      do_configure "$configure_flags"
+      do_configure "-march=znver4 -mtune=znver4 $configure_flags"
       curl -4 http://samples.mplayerhq.hu/yuv4mpeg2/example.y4m.bz2 -O --fail || exit 1
       rm -f example.y4m # in case it exists already...
       bunzip2 example.y4m.bz2 || exit 1
@@ -2427,7 +2427,7 @@ build_ffmpeg() {
       # Fix WinXP incompatibility by disabling Microsoft's Secure Channel, because Windows XP doesn't support TLS 1.1 and 1.2, but with GnuTLS or OpenSSL it does.  XP compat!
     fi
     config_options="$init_options"
-    config_options+=" --enable-libcaca"
+#    config_options+=" --enable-libcaca"
     config_options+=" --enable-gray"
     config_options+=" --enable-libtesseract"
     config_options+=" --enable-fontconfig"
@@ -2708,7 +2708,7 @@ build_ffmpeg_dependencies() {
   build_meson_cross
   build_mingw_std_threads
   build_zlib # Zlib in FFmpeg is autodetected.
-  build_libcaca # Uses zlib and dlfcn (on windows).
+#  build_libcaca # Uses zlib and dlfcn (on windows).
   build_bzip2 # Bzlib (bzip2) in FFmpeg is autodetected.
   build_liblzma # Lzma in FFmpeg is autodetected. Uses dlfcn.
   build_iconv # Iconv in FFmpeg is autodetected. Uses dlfcn.
@@ -2879,7 +2879,7 @@ prefer_stable=y # Only for x264 and x265.
 build_intel_qsv=y # note: not windows xp friendly!
 build_amd_amf=y
 disable_nonfree=y # comment out to force user y/n selection
-original_cflags='-mtune=generic -O3' # high compatible by default, see #219, some other good options are listed below, or you could use -march=native to target your local box:
+original_cflags='-march=znver4 -mtune=znver4 -O3' # high compatible by default, see #219, some other good options are listed below, or you could use -march=native to target your local box:
 original_cppflags='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0' # Needed for mingw-w64 7 as FORTIFY_SOURCE is now partially implemented, but not actually working
 # if you specify a march it needs to first so x264's configure will use it :| [ is that still the case ?]
 
@@ -3087,3 +3087,6 @@ echo "searching for all local exe's (some may not have been built this round, NB
 for file in $(find_all_build_exes); do
   echo "built $file"
 done
+
+echo `date`
+echo "---- DONE ----"
